@@ -147,18 +147,93 @@ app.patch("/api/v1/blogs/:blog_id/comments", async (req, res) => {
 });
 
 // Get a single blog with details and comments
-app.get("/api/v1/blog/:id" async (req, res)=>{
-  try{
+app.get("/api/v1/blog/:id", async (req, res) => {
+  try {
     const id = req.params.id;
-    const query = {_id: new ObjectId(id)};
+    const query = { _id: new ObjectId(id) };
     const result = await blogCollection.findOne(query);
     res.send(result);
-  }catch(error){
+  } catch (error) {
     console.log(error);
     res.send(error);
   }
-})
+});
 
+app.get("/api/v1/featured-blogs", async (_, res) => {
+  try {
+    // Add code to get featured blogs
+    const projection = {
+      title: 1,
+      author: 1,
+      authorEmail: 1,
+      authorProfilePicture: 1,
+    };
+    const pipeline = [
+      {
+        // Sort the blogs by descending word count of the longDescription field
+        $project: {
+
+          longDescription: { $size: { $split: ["$longDescription", " "] } }
+        }
+      },
+      {
+        $sort: {
+          word_count: -1
+        }
+      },
+      {
+        // Limit the results to the top 10 blogs
+        $limit: 10
+      }
+    ];
+  
+    // Aggregate the blog collection and get the featured blogs
+    const featuredBlogs = await blogCollection.aggregate(pipeline).toArray();
+  
+    // Return the featured blogs
+    res.status(200).json(featuredBlogs);
+  } catch (error) {
+    // Add code to handle errors
+    console.log(error);
+    res.send(error);
+  }
+
+});
+
+// Wishlist Routes
+
+// Get wishlists by user email
+app.get("/api/v1/wishlists", async (req, res) => {
+  try {
+    // Add code to get wishlists by user email
+  } catch (error) {
+    // Add code to handle errors
+    console.log(error);
+    res.send(error);
+  }
+});
+
+// Create a wishlist
+app.post("/api/v1/create-wishlist", async (req, res) => {
+  try {
+    // Add code to create a wishlist
+  } catch (error) {
+    // Add code to handle errors
+    onsole.log(error);
+    res.send(error);
+  }
+});
+
+// Delete a wishlist
+app.delete("/api/v1/delete-wishlist/:blog_id", async (req, res) => {
+  try {
+    // Add code to delete a wishlist
+  } catch (error) {
+    // Add code to handle errors
+    onsole.log(error);
+    res.send(error);
+  }
+});
 
 
 app.get("/", (req, res) => {
