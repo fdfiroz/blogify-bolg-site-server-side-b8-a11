@@ -120,6 +120,32 @@ app.get("/api/v1/blogs", async (req, res) => {
   }
 });
 
+// Add comment to a blog
+app.patch("/api/v1/blogs/:blog_id/comments", async (req, res) => {
+  try {
+    // Add code to add comment to a blog
+    const blog_id = req.params.blog_id;
+    const { commenterName, commenterProfilePicture, comment_text } = req.body;
+    const query = { _id: new ObjectId(blog_id) };
+    const comment = {
+      blog_id,
+      commenterName,
+      commenterProfilePicture,
+      comment_text,
+      date_commented: new Date(),
+    };
+
+    const result = await blogCollection.updateOne(query, {
+      $push: { comments: comment },
+    });
+    res.send(result);
+  } catch (error) {
+    // Add code to handle errors
+    console.log(error);
+    res.send(error);
+  }
+});
+
 
 
 app.get("/", (req, res) => {
