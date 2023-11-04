@@ -1,3 +1,9 @@
-/node_modules
+node_modules
 .devcontainer
 .vscode
+.cosine
+Obj
+fakedata.json
+.env.local
+
+.cosine
