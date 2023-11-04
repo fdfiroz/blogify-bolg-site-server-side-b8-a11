@@ -146,6 +146,19 @@ app.patch("/api/v1/blogs/:blog_id/comments", async (req, res) => {
   }
 });
 
+// Get a single blog with details and comments
+app.get("/api/v1/blog/:id" async (req, res)=>{
+  try{
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id)};
+    const result = await blogCollection.findOne(query);
+    res.send(result);
+  }catch(error){
+    console.log(error);
+    res.send(error);
+  }
+})
+
 
 
 app.get("/", (req, res) => {
