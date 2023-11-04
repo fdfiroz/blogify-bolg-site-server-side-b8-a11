@@ -83,6 +83,43 @@ app.post("/api/v1/create-blog", async (req, res) => {
   }
 });
 
+// Get all blogs
+
+// Filtering API Format
+//http://Localhost:5000/api/v1/blogs  situation 1
+//http://localhost:5000/api/v1/blogs?category=home-services  situation2
+//http:///Localhost:5000/ap1/v1/blogs?sortField=dateCreated&sortOrder=desc
+//http://localhost:5000/api/v1/blogsservice?search=home  Search API Format
+app.get("/api/v1/blogs", async (req, res) => {
+  try {
+    // Add code to get all blogs
+    let queryObj = {};
+    let sortObj = {};
+    // let searchObj = {};
+    const category = req.query.category;
+    const search = req.query.search;
+    const sortField = req.query.sortField;
+    const sortOrder = req.query.sortOrder;
+
+    if (category) {
+      queryObj.category = category;
+    }
+    if (search) {
+      queryObj.title = { $regex: search, $options: "i" };
+    }
+    if (sortField && sortOrder) {
+      sortObj[sortField] = sortOrder;
+    }
+    const cursor = blogCollection.find(queryObj).sort(sortObj);
+    const result = await cursor.toArray();
+    res.send(result);
+  } catch (error) {
+    // Add code to handle errors
+    onsole.log(error);
+    res.send(error);
+  }
+});
+
 
 
 app.get("/", (req, res) => {
