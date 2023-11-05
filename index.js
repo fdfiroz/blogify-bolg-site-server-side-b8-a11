@@ -47,6 +47,40 @@ const database = client.db("blogify");
 const blogCollection = database.collection("blogs");
 const wishlistCollection = database.collection("wishlist");
 
+//JWT Middleware
+app.post("/api/v1/auth/access-token", async (req, res) => {
+  const body = req.body;
+  //   jwt.sign("payload", "secretKey", "expireInfo");
+  // user: abc@gmail.com
+  const token = jwt.sign(body, process.env.ACCESS_TOKEN, { expiresIn: "10h" });
+  const expirationDate = new Date(); // Create a new Date object
+  expirationDate.setDate(expirationDate.getDate() + 7); // Set the expiration date to 7 days from the current date
+  res
+    .cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "none",
+      expires: expirationDate,
+    })
+    .send({ massage: "success" });
+ 
+  //   res.send({ body, token });
+});
+
+const verify = async (req, res, next) => {
+  const token = req.cookies?.token;
+  if (!token) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "unauthorized access" });
+    }
+    req.user = decoded;
+    next();
+  });
+};
+
 // Blog Routes
 
 // Create a blog
@@ -205,14 +239,22 @@ app.get("/api/v1/featured-blogs", async (_, res) => {
 // Wishlist Routes
 
 // Get wishlists by user email
-app.get("/api/v1/wishlists", async (req, res) => {
+app.get("/api/v1/wishlists", verify, async (req, res) => {
   try {
     // Add code to get wishlists by user email
-    const email = req.query.email;
-    const query = { email: email };
-    const result = await wishlistCollection.find(query).toArray();
-
-    res.send(result);
+    const queryEmail = req.query.email;
+    const tokenEmail = req.user.email;
+    let query = {}
+  
+    if(queryEmail !== tokenEmail) {
+      return res.status(403).send({ message: "forbidden access" });
+    }
+    if(queryEmail){
+      query.email = queryEmail
+    }
+      const result = await wishlistCollection.find({query}).toArray();
+      res.send(result);
+ 
   } catch (error) {
     // Add code to handle errors
     console.log(error);
@@ -221,7 +263,7 @@ app.get("/api/v1/wishlists", async (req, res) => {
 });
 
 // Create a wishlist
-app.post("/api/v1/create-wishlist", async (req, res) => {
+app.post("/api/v1/create-wishlist", verify, async (req, res) => {
   try {
     // Add code to create a wishlist
     const wishlist = req.body;
@@ -235,7 +277,7 @@ app.post("/api/v1/create-wishlist", async (req, res) => {
 });
 
 // Delete a wishlist
-app.delete("/api/v1/delete-wishlist/:id", async (req, res) => {
+app.delete("/api/v1/delete-wishlist/:id", verify, async (req, res) => {
   try {
     // Add code to delete a wishlist
     const id = req.params.id;
