@@ -220,6 +220,20 @@ app.get("/api/v1/wishlists", async (req, res) => {
   }
 });
 
+// Create a wishlist
+app.post("/api/v1/create-wishlist", async (req, res) => {
+  try {
+    // Add code to create a wishlist
+    const wishlist = req.body;
+    const result = await wishlistCollection.insertOne(wishlist);
+    res.send(result);
+  } catch (error) {
+    // Add code to handle errors
+    console.log(error);
+    res.send(error);
+  }
+});
+
 
 
 
