@@ -205,6 +205,22 @@ app.get("/api/v1/featured-blogs", async (_, res) => {
 // Wishlist Routes
 
 // Get wishlists by user email
+app.get("/api/v1/wishlists", async (req, res) => {
+  try {
+    // Add code to get wishlists by user email
+    const email = req.query.email;
+    const query = { email: email };
+    const result = await wishlistCollection.find(query).toArray();
+
+    res.send(result);
+  } catch (error) {
+    // Add code to handle errors
+    console.log(error);
+    res.send(error);
+  }
+});
+
+
 
 
 app.get("/", (req, res) => {
