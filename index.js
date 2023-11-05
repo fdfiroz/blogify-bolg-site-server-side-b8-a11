@@ -234,7 +234,20 @@ app.post("/api/v1/create-wishlist", async (req, res) => {
   }
 });
 
-
+// Delete a wishlist
+app.delete("/api/v1/delete-wishlist/:id", async (req, res) => {
+  try {
+    // Add code to delete a wishlist
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const result = await wishlistCollection.deleteOne(query);
+    res.send(result);
+  } catch (error) {
+    // Add code to handle errors
+    console.log(error);
+    res.send(error);
+  }
+});
 
 
 app.get("/", (req, res) => {
