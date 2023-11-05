@@ -170,10 +170,13 @@ app.get("/api/v1/featured-blogs", async (_, res) => {
     };
     const pipeline = [
       {
-        // Sort the blogs by descending word count of the longDescription field
         $project: {
-
-          longDescription: { $size: { $split: ["$longDescription", " "] } }
+          title: 1,
+          author: 1,
+          authorEmail: 1,
+          authorProfilePicture: 1,
+          longDescription:1,
+          word_count: { $size: { $split: ["$longDescription", " "] } }
         }
       },
       {
@@ -182,11 +185,10 @@ app.get("/api/v1/featured-blogs", async (_, res) => {
         }
       },
       {
-        // Limit the results to the top 10 blogs
         $limit: 10
       }
     ];
-  
+    
     // Aggregate the blog collection and get the featured blogs
     const featuredBlogs = await blogCollection.aggregate(pipeline).toArray();
   
@@ -203,37 +205,6 @@ app.get("/api/v1/featured-blogs", async (_, res) => {
 // Wishlist Routes
 
 // Get wishlists by user email
-app.get("/api/v1/wishlists", async (req, res) => {
-  try {
-    // Add code to get wishlists by user email
-  } catch (error) {
-    // Add code to handle errors
-    console.log(error);
-    res.send(error);
-  }
-});
-
-// Create a wishlist
-app.post("/api/v1/create-wishlist", async (req, res) => {
-  try {
-    // Add code to create a wishlist
-  } catch (error) {
-    // Add code to handle errors
-    onsole.log(error);
-    res.send(error);
-  }
-});
-
-// Delete a wishlist
-app.delete("/api/v1/delete-wishlist/:blog_id", async (req, res) => {
-  try {
-    // Add code to delete a wishlist
-  } catch (error) {
-    // Add code to handle errors
-    onsole.log(error);
-    res.send(error);
-  }
-});
 
 
 app.get("/", (req, res) => {
