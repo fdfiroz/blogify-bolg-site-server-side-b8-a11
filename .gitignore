@@ -7,3 +7,4 @@ fakedata.json
 .env.local
 
 .cosine
+.vercel

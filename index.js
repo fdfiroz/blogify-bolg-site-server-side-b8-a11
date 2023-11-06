@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
   })
 );
@@ -58,7 +58,7 @@ app.post("/api/v1/auth/access-token", async (req, res) => {
   res
     .cookie("token", token, {
       httpOnly: true,
-      secure: false,
+      secure: true,
       sameSite: "none",
       expires: expirationDate,
     })
@@ -66,20 +66,29 @@ app.post("/api/v1/auth/access-token", async (req, res) => {
  
   //   res.send({ body, token });
 });
+//logout
+app.post("/api/v1/auth/logout", async (req, res) => {
+  const user = req.body;
+  res.clearCookie("token", { maxAge: 0 }).send({ message: "success" });
+});
 
 const verify = async (req, res, next) => {
   const token = req.cookies?.token;
+  console.log(token);
   if (!token) {
     return res.status(401).send({ message: "unauthorized access" });
   }
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+  jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
     if (err) {
       return res.status(401).send({ message: "unauthorized access" });
     }
+    console.log(decoded);
     req.user = decoded;
     next();
   });
 };
+
+
 
 // Blog Routes
 
@@ -149,7 +158,7 @@ app.get("/api/v1/blogs", async (req, res) => {
     res.send(result);
   } catch (error) {
     // Add code to handle errors
-    onsole.log(error);
+    console.log(error);
     res.send(error);
   }
 });
@@ -181,10 +190,11 @@ app.patch("/api/v1/blogs/:blog_id/comments", async (req, res) => {
 });
 
 // Get a single blog with details and comments
-app.get("/api/v1/blog/:id", async (req, res) => {
+app.get("/api/v1/blog/:id",verify, async (req, res) => {
   try {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
+    console.log(query);
     const result = await blogCollection.findOne(query);
     res.send(result);
   } catch (error) {
@@ -192,6 +202,20 @@ app.get("/api/v1/blog/:id", async (req, res) => {
     res.send(error);
   }
 });
+
+app.put("/api/v1/blog/:id"), verify, async (req, res) =>{
+  const id = req.params.id;
+  const updatedProduct = req.body;
+  const filter = { _id: new ObjectId(id) };
+  const options = { upsert: true };
+  const updateDoc = {
+    $set: {
+        
+    },
+  };
+    const result = await blogCollection.updateOne(filter, updateDoc, options);
+    res.send(result);
+};
 
 app.get("/api/v1/featured-blogs", async (_, res) => {
   try {
