@@ -168,14 +168,13 @@ app.patch("/api/v1/blogs/:blog_id/comments", async (req, res) => {
   try {
     // Add code to add comment to a blog
     const blog_id = req.params.blog_id;
-    const { commenterName, commenterProfilePicture, comment_text } = req.body;
+    const { commenterName, commenterProfilePicture, commentText } = req.body;
     const query = { _id: new ObjectId(blog_id) };
     const comment = {
-      blog_id,
       commenterName,
       commenterProfilePicture,
-      comment_text,
-      date_commented: new Date(),
+      commentText,
+      dateCommented: new Date(),
     };
 
     const result = await blogCollection.updateOne(query, {
@@ -266,7 +265,7 @@ app.get("/api/v1/featured-blogs", async (_, res) => {
 app.get("/api/v1/wishlists", verify, async (req, res) => {
   try {
     // Add code to get wishlists by user email
-    const queryEmail = req.query.email;
+    const queryEmail = req.query.user;
     const tokenEmail = req.user.email;
     let query = {}
   
@@ -274,9 +273,10 @@ app.get("/api/v1/wishlists", verify, async (req, res) => {
       return res.status(403).send({ message: "forbidden access" });
     }
     if(queryEmail){
-      query.email = queryEmail
+      query.user = queryEmail
     }
-      const result = await wishlistCollection.find({query}).toArray();
+    console.log(query)
+      const result = await wishlistCollection.find(query).toArray();
       res.send(result);
  
   } catch (error) {
