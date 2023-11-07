@@ -148,11 +148,13 @@ app.get("/api/v1/blogs", async (req, res) => {
       queryObj.category = category;
     }
     if (search) {
-      queryObj.title = { $regex: search, $options: "i" };
+      queryObj.title = new RegExp(search, 'i');
     }
     if (sortField && sortOrder) {
       sortObj[sortField] = sortOrder;
     }
+    console.log(queryObj)
+
     const cursor = blogCollection.find(queryObj).sort(sortObj);
     const result = await cursor.toArray();
     res.send(result);
@@ -201,10 +203,10 @@ app.get("/api/v1/blog/:id",verify, async (req, res) => {
     res.send(error);
   }
 });
-
-app.put("/api/v1/blog/:id"), verify, async (req, res) =>{
+//Update a blog
+app.patch("/api/v1/blog/:id"), verify, async (req, res) =>{
   const id = req.params.id;
-  const updatedProduct = req.body;
+  const updatedBlog = req.body;
   const filter = { _id: new ObjectId(id) };
   const options = { upsert: true };
   const updateDoc = {
