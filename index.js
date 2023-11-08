@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: ['http://localhost:5173', 'http://localhost:5174', 'https://blogify-fdfiroz-0006.firebaseapp.com', 'https://blogify-fdfiroz-0006.web.app'],
     credentials: true,
   })
 );
@@ -74,7 +74,7 @@ app.post("/api/v1/auth/logout", async (req, res) => {
 
 const verify = async (req, res, next) => {
   const token = req.cookies?.token;
-  console.log(token);
+  // console.log(token);
   if (!token) {
     return res.status(401).send({ message: "unauthorized access" });
   }
@@ -82,7 +82,6 @@ const verify = async (req, res, next) => {
     if (err) {
       return res.status(401).send({ message: "unauthorized access" });
     }
-    console.log(decoded);
     req.user = decoded;
     next();
   });
@@ -118,7 +117,7 @@ app.post("/api/v1/create-blog", async (req, res) => {
     };
 
     const result = await blogCollection.insertOne(blog);
-    console.log(result);
+    // console.log(result);
     res.send(result);
   } catch (error) {
     console.log(error);
@@ -153,8 +152,6 @@ app.get("/api/v1/blogs", async (req, res) => {
     if (sortField && sortOrder) {
       sortObj[sortField] = sortOrder;
     }
-    console.log(queryObj)
-
     const cursor = blogCollection.find(queryObj).sort(sortObj);
     const result = await cursor.toArray();
     res.send(result);
@@ -203,20 +200,50 @@ app.get("/api/v1/blog/:id",verify, async (req, res) => {
     res.send(error);
   }
 });
+
 //Update a blog
-app.patch("/api/v1/blog/:id"), verify, async (req, res) =>{
-  const id = req.params.id;
-  const updatedBlog = req.body;
-  const filter = { _id: new ObjectId(id) };
-  const options = { upsert: true };
+
+app.patch("/api/v1/update", verify, async (req, res) => {
+ try{
+  const {
+    _id,
+    title,
+    image,
+    category,
+    shortDescription,
+    longDescription,
+    author,
+    authorEmail,
+    authorProfilePicture,
+  } = req.body;
+  const tokenEmail = req.user.email;
+  if(authorEmail !== tokenEmail) {
+    return res.status(403).send({ message: "forbidden access" });
+  }
+  const filter = { _id: new ObjectId(_id) };
   const updateDoc = {
     $set: {
+    title,
+    image,
+    category,
+    shortDescription,
+    longDescription,
+    author,
+    authorEmail,
+    authorProfilePicture,
         
     },
-  };
-    const result = await blogCollection.updateOne(filter, updateDoc, options);
-    res.send(result);
-};
+  }
+ const result = await blogCollection.updateOne(filter, updateDoc);
+
+  res.send(result)
+ }catch(err){
+   console.log(err)
+ }
+})
+// 
+
+
 
 app.get("/api/v1/featured-blogs", async (_, res) => {
   try {
